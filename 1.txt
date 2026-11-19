@@ -1,0 +1,53 @@
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd REPOSITORY_FOLDER
+clean test package
+
+docker compose up -d
+docker ps
+
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: library-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: library_db
+      MYSQL_USER: library_user
+      MYSQL_PASSWORD: library123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - library-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: library-wordpress
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: library_user
+      WORDPRESS_DB_PASSWORD: library123
+      WORDPRESS_DB_NAME: library_db
+    depends_on:
+      - mysql
+    networks:
+      - library-network
+
+volumes:
+  mysql_data:
+
+networks:
+  library-network:
+    driver: bridge
+
+
+
+docker stop library-mysql
+
+docker compose down
+docker compose up -d

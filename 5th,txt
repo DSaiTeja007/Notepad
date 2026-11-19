@@ -1,0 +1,31 @@
+sudo apt update
+sudo apt install -y git docker.io docker-compose-v2
+sudo systemctl enable --now docker
+sudo usermod -aG docker ubuntu
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd YOUR_REPOSITORY_FOLDER
+
+
+FROM maven:3.9.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+sudo docker build -t library-app .
+
+sudo docker run -d --name library-app -p 8080:8080 library-app
